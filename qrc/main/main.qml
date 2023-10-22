@@ -27,29 +27,11 @@ Item {
             spacing: 10
             anchors.fill: parent
 
-            TextField  {
-                id: name
-                font.pointSize: 15
-                Layout.fillWidth: true
-                focus: true
-                color: "red"
-                
-                background: Rectangle {
-                    radius: 2
-                    implicitWidth: 200
-                    implicitHeight: 30
-                    border.color: "green"
-                    border.width: 1
-              }
-            }
-
-            Button {
-                text: "Greet!"
-                font.pointSize: 15
-                Layout.fillWidth: true
+            QMLineInput {
+                id: inp
 
                 onClicked: {
-                    root.name = name.text
+                    root.name = inp.inputField.text
                     greeter.print_hello(root.name)
                 }
             }
