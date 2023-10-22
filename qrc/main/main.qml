@@ -9,6 +9,7 @@ Item {
     id: root
     
     property var name;
+    property var pointsAmount;
 
     Window {
         visible: true
@@ -27,12 +28,31 @@ Item {
             spacing: 10
             anchors.fill: parent
 
-            QMLineInput {
-                id: inp
+            RowLayout{
+                TextField {
+                    id: inputField
+                    font.pointSize: 15
+                    Layout.fillWidth: true
+                    focus: true
+                    color: "red"
+                        
+                    background: Rectangle {
+                        radius: 2
+                        implicitWidth: 100
+                        implicitHeight: 30
+                        border.color: "black"
+                        border.width: 1
+                    }  
+                }
 
-                onClicked: {
-                    root.name = inp.inputField.text
-                    greeter.print_hello(root.name)
+                Button {
+                    text: "confirm"
+                    font.pointSize: 15
+                    Layout.fillWidth: true
+
+                    onClicked: {
+
+                    }
                 }
             }
 

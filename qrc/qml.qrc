@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>components/QMLineInput.qml</file>
     </qresource>
 </RCC>
