@@ -6,8 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-qmetaobject = "0.2"
-cstr = "0.2"
-plotters = "0.3"
+fltk = "*"
 image = "0.24.7"
 rusttype = "*"

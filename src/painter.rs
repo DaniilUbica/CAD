@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb, RgbaImage, Rgba, RgbImage, imageops};
+use image::{ImageBuffer, Rgb, Rgba, RgbImage, imageops};
 use rusttype::{Font, Scale};
 
 const OFFSET: u32 = 50;
