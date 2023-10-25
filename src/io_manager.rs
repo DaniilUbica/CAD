@@ -1,0 +1,1 @@
+const RECTS_FILE_PATH: &str = "rects.cn";

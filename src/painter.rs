@@ -1,35 +1,36 @@
-use image::{ImageBuffer, Rgb, Rgba, RgbImage, imageops};
+use image::{ImageBuffer, Rgb, RgbImage, imageops};
 use rusttype::{Font, Scale};
+
+pub const OUT_FILE_NAME: &str = "out.png";
 
 const OFFSET: u32 = 50;
 const POINT_RADIUS: u32 = 5;
 
-pub fn draw_figure(coordinates: &[(u32, u32)], connections: &[(usize, usize)]) {
-    let max_x = coordinates.iter().map(|&(x, _)| x).max().unwrap() + 100;
-    let max_y = coordinates.iter().map(|&(_, y)| y).max().unwrap() + 100;
+const RED: Rgb<u8> = Rgb([255, 0, 0]);
+const GREEN: Rgb<u8> = Rgb([0, 255, 0]);
+const BLUE: Rgb<u8> = Rgb([0, 0, 255]);
+const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
+const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 
-    let mut img = ImageBuffer::new(max_x + 50, max_y + 50);
-    
-    for &(point1, point2) in connections {
-        let (x1, y1) = coordinates[point1];
-        let (x2, y2) = coordinates[point2];
-        draw_circle(&mut img, x1 as i32, y1 as i32, POINT_RADIUS as i32, Rgb([0, 0, 255]));
-        draw_circle(&mut img, x2 as i32, y2 as i32, POINT_RADIUS as i32, Rgb([0, 0, 255]));
-        draw_line(&mut img, x1, y1, x2, y2);
-    }
-    
-    img = imageops::flip_vertical(&img);
-
-    let font_data = include_bytes!("../arial.ttf");
-    let font = Font::try_from_bytes(font_data as &[u8]).unwrap();
-
-    let scale = Scale::uniform(24.0);
-
-    for &(x, y) in coordinates {
-        // draw text here...
+pub fn draw_figure(rects: &[(usize, usize)]) {
+    let mut total_width = (OFFSET * 2) as usize;
+    for i in rects {
+        total_width += i.0;
     }
 
-    img.save("figure.png").unwrap();
+    let height = rects.iter().max_by_key(|&(value, _)| value).unwrap().1 + OFFSET as usize;
+
+    let mut image_buffer: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_pixel(total_width as u32, height as u32, WHITE);
+
+    let mut pos_x = OFFSET as usize;
+    for i in rects {
+        draw_rectangle_outline(&mut image_buffer, pos_x, (height - i.1) / 2, i.0, i.1, BLACK);
+        pos_x += i.0;
+    }
+
+    draw_arrow(&mut image_buffer, 50, 50, 100, 100);
+
+    image_buffer.save(OUT_FILE_NAME).unwrap();
 }
 
 fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: u32, y1: u32, x2: u32, y2: u32) {
@@ -71,12 +72,24 @@ fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: u32, y1: u32, x2: u32,
     }
 }
 
+fn draw_rectangle_outline(image_buffer: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x: usize, y: usize, width: usize, height: usize, color: Rgb<u8>) {
+    for i in x..(x + width) {
+        image_buffer.put_pixel(i as u32, y as u32, color);
+        image_buffer.put_pixel(i as u32, y as u32 + height as u32 - 1, color);
+    }
+
+    for j in y..(y + height) {
+        image_buffer.put_pixel(x as u32, j as u32, color);
+        image_buffer.put_pixel(x as u32 + width as u32 - 1, j as u32, color);
+    }
+}
+
 fn draw_text(image: &mut RgbImage, font: &Font<'static>, scale: Scale, x: u32, y: u32, color: Rgb<u8>, text: &str) {
     let glyphs: Vec<_> = font.layout(text, scale, rusttype::point(x as f32, y as f32)).collect();
 
     for glyph in glyphs {
         if let Some(bounding_box) = glyph.pixel_bounding_box() {
-            glyph.draw(|gx, gy, v| {
+            glyph.draw(|gx, gy, _v| {
                 let x = gx + bounding_box.min.x as u32;
                 let y = gy + bounding_box.min.y as u32;
                 let pixel = image.get_pixel_mut(x, y);
@@ -102,4 +115,22 @@ fn draw_circle(image: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, center_x: i32, center_
             }
         }
     }
+}
+
+fn draw_arrow(image: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, start_x: u32, start_y: u32, end_x: u32, end_y: u32) {
+    imageproc::drawing::draw_line_segment_mut(image, (start_x as f32, start_y as f32), (end_x as f32, end_y as f32), RED);
+
+    let angle = ((end_y as f32 - start_y as f32).atan2(end_x as f32 - start_x as f32) + std::f32::consts::PI * 2.0) % (std::f32::consts::PI * 2.0);
+
+    let arrow_length = 10;
+    let arrow_angle = std::f32::consts::PI / 6.0;
+    let arrow_start_x = end_x as f32 - (arrow_length as f32 * angle.cos());
+    let arrow_start_y = end_y as f32 - (arrow_length as f32 * angle.sin());
+    let arrow_end_x = end_x as f32 - ((arrow_length as f32 * arrow_angle.cos()) + (arrow_length as f32 * (angle + arrow_angle).cos()));
+    let arrow_end_y = end_y as f32 - ((arrow_length as f32 * arrow_angle.sin()) + (arrow_length as f32 * (angle + arrow_angle).sin()));
+    imageproc::drawing::draw_line_segment_mut(image, (arrow_start_x, arrow_start_y), (arrow_end_x, arrow_end_y), RED);
+
+    let arrow_end_x = end_x as f32 - ((arrow_length as f32 * arrow_angle.cos()) + (arrow_length as f32 * (angle - arrow_angle).cos()));
+    let arrow_end_y = end_y as f32 - ((arrow_length as f32 * arrow_angle.sin()) + (arrow_length as f32 * (angle - arrow_angle).sin()));
+    imageproc::drawing::draw_line_segment_mut(image, (arrow_start_x, arrow_start_y), (arrow_end_x, arrow_end_y), RED);
 }

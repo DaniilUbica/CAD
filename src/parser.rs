@@ -15,30 +15,20 @@ impl std::error::Error for Error {
     }
 }
 
-pub fn parse_points(string: String, amount: usize) -> Result<Vec<i32>, Error> {
-    let numbers: Vec<i32> = string
+pub fn parse_numbers(string: String, amount: usize, err_msg: &'static str) -> Result<Vec<(usize, usize)>, Error> {
+    let numbers: Vec<usize> = string
     .split_whitespace()
     .filter_map(|s| s.parse().ok())
     .collect();
 
-    if numbers.len() >= amount * 2 {
-        return Ok(numbers[..amount * 2].to_vec());
+    let pairs: Vec<(usize, usize)> = numbers.chunks(2)
+        .map(|chunk| (chunk[0], chunk[1]))
+        .collect();
+
+    if pairs.len() >= amount {
+        return Ok(pairs[..amount].to_vec());
     }
     else {
-        return Err(Error("Ошибка, Вы ввели слишком мало точек!"));
-    }
-}
-
-pub fn parse_edges(string: String, amount: usize) -> Result<Vec<i32>, Error> {
-    let numbers: Vec<i32> = string
-    .split_whitespace()
-    .filter_map(|s| s.parse().ok())
-    .collect();
-
-    if numbers.len() >= amount * 2 {
-        return Ok(numbers[..amount * 2].to_vec());
-    }
-    else {
-        return Err(Error("Ошибка, Вы ввели слишком мало рёбер!"));
+        return Err(Error(err_msg));
     }
 }
