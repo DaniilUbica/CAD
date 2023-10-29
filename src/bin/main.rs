@@ -5,7 +5,7 @@ use CAD::gui::*;
 
 fn main() {
     let app = fltk::app::App::default();
-    let mut wnd = init_window();
+    let mut wnd = init_window(WINDOW_WIDTH, WINDOW_HEIGHT, &init_input);
     fltk::prelude::WidgetExt::show(&mut wnd);
     app.run().unwrap();
     // let coordinates = vec![(400, 400), (100, 400), (100, 200), (200, 200), (0, 100), (0, 0), (400, 0), (400, 200), (300, 300)];

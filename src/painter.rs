@@ -12,7 +12,7 @@ const BLUE: Rgb<u8> = Rgb([0, 0, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 
-pub fn draw_figure(rects: &[(usize, usize)]) {
+pub fn draw_figure(rects: &[(usize, usize)]) -> (u32, u32) {
     let mut total_width = (OFFSET * 2) as usize;
     for i in rects {
         total_width += i.0;
@@ -28,9 +28,9 @@ pub fn draw_figure(rects: &[(usize, usize)]) {
         pos_x += i.0;
     }
 
-    draw_arrow(&mut image_buffer, 50, 50, 100, 100);
-
     image_buffer.save(OUT_FILE_NAME).unwrap();
+
+    (total_width as u32, height as u32)
 }
 
 fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: u32, y1: u32, x2: u32, y2: u32) {

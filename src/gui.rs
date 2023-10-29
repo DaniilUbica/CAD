@@ -7,31 +7,43 @@ use fltk::frame::Frame;
 use fltk::window::Window;
 use fltk::prelude::*;
 
-use crate::{parse_numbers, draw_figure, painter};
+use crate::{parse_numbers, draw_figure, painter, OUT_FILE_NAME};
 
-const WINDOW_WIDTH: i32 = 800;
-const WINDOW_HEIGHT: i32 = 600;
+pub const WINDOW_WIDTH: i32 = 800;
+pub const WINDOW_HEIGHT: i32 = 600;
+
+const INPUT_WIDTH: i32 = 250;
+const INPUT_HEIGHT: i32 = 25;
+
+const CONF_BUTTON_WIDTH: i32 = 150;
+const CONF_BUTTON_HEIGHT: i32 = 25;
+
+const INFO_WIDTH: i32 = 500;
+const INFO_HEIGHT: i32 = 25;
+
 const OFFSET: i32 = 50;
 
-pub fn init_window() -> window::DoubleWindow {
-    let window = Window::new(350, 150, WINDOW_WIDTH, WINDOW_HEIGHT, "SAPR-BAR");
+pub fn init_window(width: i32, height: i32, content: &dyn Fn()) -> window::DoubleWindow {
+    let window = Window::new(350, 150, width, height, "CAD System");
 
-    init_input();
+    content();
 
     window.end();
     window
 }
 
-fn init_input() {
-    let points_amount = input::Input::new(150, 50, 150, 25, "Количество точек: ");
-    let points = input::Input::new(150, 100, 150, 25, "Координаты точек: ");
+pub fn init_input() {
+    let points_amount = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 50, INPUT_WIDTH, INPUT_HEIGHT, "Количество частей: ");
+    let points = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 100, INPUT_WIDTH, INPUT_HEIGHT, "Размеры частей: ");
 
-    let mut info = Frame::new(250, 575, 500, 25, "");
+    let r_loads = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 150, INPUT_WIDTH, INPUT_HEIGHT, "Распределенные нагрузки: ");
+    let loads = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 200, INPUT_WIDTH, INPUT_HEIGHT, "Сосредоточенные нагрузки: ");
+
+    let mut info = Frame::new(WINDOW_WIDTH / 2 - INFO_WIDTH / 2, 575, INFO_WIDTH, INFO_HEIGHT, "");
+
+    let mut confirm_btn = Button::new(WINDOW_WIDTH / 2 - CONF_BUTTON_WIDTH / 2, 350, CONF_BUTTON_WIDTH, CONF_BUTTON_HEIGHT, "Подтвердить");
+    
     let mut points_vec= vec![];
-    let mut confirm_btn = Button::new(325, 150, 150, 25, "Подтвердить");
-
-    let mut figure_frame = Frame::new(OFFSET, 200, WINDOW_WIDTH - OFFSET * 2, WINDOW_HEIGHT / 2, "");
-
     confirm_btn.set_callback({       // seychas budet pizdec...
         let mut err_msg = "";
 
@@ -56,15 +68,26 @@ fn init_input() {
             }
 
             if err_msg.is_empty() {
-                draw_figure(&points_vec[..]);
-                let mut figure = PngImage::load("./out.png").unwrap();
-                figure.scale(WINDOW_WIDTH - OFFSET * 2, WINDOW_HEIGHT / 2, true, true);
-                figure_frame.set_image(Some(figure));
+                let size = draw_figure(&points_vec[..]);
+                let mut w = size.0 as i32;
+                let mut h = size.1 as i32;
+                if w < WINDOW_WIDTH || h < WINDOW_HEIGHT {
+                    w = WINDOW_WIDTH;
+                    h = WINDOW_HEIGHT
+                }
+                let mut wnd = init_window(w, h, &init_frame);
+                wnd.show();
             }
 
             info.set_label(err_msg);
             info.set_color(enums::Color::Red);
         }
     });
+}
 
+fn init_frame() {
+    let mut figure_frame = Frame::new(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, "");
+    let mut figure = PngImage::load(format!("./{}", OUT_FILE_NAME)).unwrap();
+    figure.scale(WINDOW_WIDTH, WINDOW_HEIGHT, true, true);
+    figure_frame.set_image(Some(figure));
 }
