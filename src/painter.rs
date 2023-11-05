@@ -1,10 +1,12 @@
 use image::{ImageBuffer, Rgb, RgbImage, imageops};
 use rusttype::{Font, Scale};
 
+use crate::contains_in_vec;
+
 pub const OUT_FILE_NAME: &str = "out.png";
 
 const OFFSET: u32 = 50;
-const POINT_RADIUS: u32 = 5;
+const POINT_RADIUS: u32 = 3;
 
 const RED: Rgb<u8> = Rgb([255, 0, 0]);
 const GREEN: Rgb<u8> = Rgb([0, 255, 0]);
@@ -12,7 +14,7 @@ const BLUE: Rgb<u8> = Rgb([0, 0, 255]);
 const BLACK: Rgb<u8> = Rgb([0, 0, 0]);
 const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 
-pub fn draw_figure(rects: &[(usize, usize)]) -> (u32, u32) {
+pub fn draw_figure(rects: &[(usize, usize)], point_loads: &[(i32, i32)], distributed_loads: &[(i32, i32)]) -> (u32, u32) {
     let mut total_width = (OFFSET * 2) as usize;
     for i in rects {
         total_width += i.0;
@@ -22,10 +24,52 @@ pub fn draw_figure(rects: &[(usize, usize)]) -> (u32, u32) {
 
     let mut image_buffer: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_pixel(total_width as u32, height as u32, WHITE);
 
+    let mut rects_points = vec![];
+    let mut rects_heights = vec![];
+
     let mut pos_x = OFFSET as usize;
     for i in rects {
+        let tmp = pos_x;
+
         draw_rectangle_outline(&mut image_buffer, pos_x, (height - i.1) / 2, i.0, i.1, BLACK);
+
         pos_x += i.0;
+        rects_points.push((tmp, pos_x));
+        rects_heights.push((height) / 2);
+    }
+
+    for i in 0..distributed_loads.len() {
+        let start_x = rects_points[distributed_loads[i].0 as usize - 1].0;
+        let end_x = rects_points[distributed_loads[i].0 as usize - 1].1;
+        let h = rects_heights[distributed_loads[i].0 as usize - 1];
+
+        if distributed_loads[i].1 > 0 {
+            draw_line(&mut image_buffer, start_x, h,end_x, h, RED);
+        }
+        else {
+            draw_line(&mut image_buffer, start_x, h,end_x, h, BLUE);
+        }
+    }
+
+    for i in 0..point_loads.len() {
+        let x;
+        let y = rects_heights[point_loads[i].0 as usize - 1];
+        
+        if i == point_loads.len() - 1 && point_loads.len() > 1 {
+            x = rects_points[point_loads[i].0 as usize - 1].0;
+        }
+        else {
+            x = rects_points[point_loads[i].0 as usize - 1].1;
+        }
+
+        if (!contains_in_vec(point_loads[i].0, distributed_loads)) {
+            if point_loads[i].1 > 0 {
+                draw_circle(&mut image_buffer, x as i32, y as i32, POINT_RADIUS as i32, RED);
+            }
+            else {
+                draw_circle(&mut image_buffer, x as i32, y as i32, POINT_RADIUS as i32, BLUE);
+            }
+        }
     }
 
     image_buffer.save(OUT_FILE_NAME).unwrap();
@@ -33,7 +77,7 @@ pub fn draw_figure(rects: &[(usize, usize)]) -> (u32, u32) {
     (total_width as u32, height as u32)
 }
 
-fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: u32, y1: u32, x2: u32, y2: u32) {
+fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: usize, y1: usize, x2: usize, y2: usize, color: Rgb<u8>) {
     let dx = (x2 as i32 - x1 as i32).abs();
     let dy = (y2 as i32 - y1 as i32).abs();
     let sx = if x1 < x2 { 1 } else { -1 };
@@ -44,7 +88,7 @@ fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: u32, y1: u32, x2: u32,
     if dx > dy {
         let mut err = dx / 2;
         loop {
-            img.put_pixel(x as u32 + OFFSET, y as u32 + OFFSET, Rgb([0, 0, 255]));
+            img.put_pixel(x as u32, y as u32, color);
             if x == x2 as i32 {
                 break;
             }
@@ -58,7 +102,7 @@ fn draw_line(img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, x1: u32, y1: u32, x2: u32,
     } else {
         let mut err = dy / 2;
         loop {
-            img.put_pixel(x as u32 + OFFSET, y as u32 + OFFSET, Rgb([0, 0, 255]));
+            img.put_pixel(x as u32, y as u32, color);
             if y == y2 as i32 {
                 break;
             }
@@ -111,7 +155,7 @@ fn draw_circle(image: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, center_x: i32, center_
                 if y < 0 {
                     y *= -1;
                 }
-                image.put_pixel(x as u32 + OFFSET, y as u32 + OFFSET, color);
+                image.put_pixel(x as u32, y as u32, color);
             }
         }
     }
