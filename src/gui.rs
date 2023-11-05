@@ -127,7 +127,7 @@ pub fn init_input() {
         move |_| {
             let file_name = name.value();
 
-            let (rects, e, k) = read_rects(&file_name);
+            let (rects, _, _) = read_rects(&file_name);
             let (point, dist) = read_loads(&file_name);
 
             let size = draw_figure(&rects[..], &point[..], &dist[..]);
