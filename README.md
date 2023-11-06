@@ -2,18 +2,20 @@
 
 ## Set the construction
 
-![image](https://github.com/DaniilUbica/CAD/assets/102466617/eebe788a-2851-4f00-8d12-a28471728c02)
+![image](https://github.com/DaniilUbica/CAD/assets/102466617/b155f329-7de2-4e52-9e53-de5cd6b6ae7b)
 
-![image](https://github.com/DaniilUbica/CAD/assets/102466617/e6f33673-d70c-4a1d-85f0-91a71556911c)
+![image](https://github.com/DaniilUbica/CAD/assets/102466617/0b83a29e-c16a-43db-9bc0-b37de08f3119)
 
 ## Watch count results (displacements, longitudinal stresses)
 
-![image](https://github.com/DaniilUbica/CAD/assets/102466617/2962d763-768d-4e51-bd99-acbf9a15e8a6)
+![image](https://github.com/DaniilUbica/CAD/assets/102466617/2207cbfb-e6eb-47bd-8604-9e1bacabfaf0)
 
-## The application will create files that you can use after
+## The application will generate files that you can use after
 
-![image](https://github.com/DaniilUbica/CAD/assets/102466617/57b79c85-05b1-49dd-9300-426ddc4f1f65)
+![image](https://github.com/DaniilUbica/CAD/assets/102466617/1a18736c-9766-4e64-8941-0d328287a46a)
 
 *.cn - construction file
+
 *.ld - loads file
+
 *.md - results file
