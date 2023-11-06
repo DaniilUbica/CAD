@@ -1,7 +1,5 @@
-use image::{ImageBuffer, Rgb, RgbImage, imageops};
+use image::{ImageBuffer, Rgb, RgbImage};
 use rusttype::{Font, Scale};
-
-use crate::contains_in_vec;
 
 pub const OUT_FILE_NAME: &str = "out.png";
 

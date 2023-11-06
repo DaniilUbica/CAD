@@ -169,7 +169,7 @@ pub fn count_forces(amount: usize, rects: &[(usize, usize)], e: &[usize], k: &[u
     let mut n = vec![];
     for i in 0..amount {
         let q1 = *m_dist.get(&((i + 1) as i32)).unwrap_or(&0) as f64;
-        n.push((nx(e[i] as f64, rects[i].0 as f64, rects[i].1 as f64, diff[i+1], q1 as f64, 1.0), nx(e[i] as f64, rects[i].0 as f64, rects[i].1 as f64, diff[i+1], q1 as f64, -1.0)));
+        n.push((nx(e[i] as f64, k[i] as f64 * rects[i].0 as f64, rects[i].1 as f64, diff[i+1], q1 as f64, 1.0), nx(e[i] as f64, rects[i].0 as f64, rects[i].1 as f64, diff[i+1], q1 as f64, -1.0)));
     }
 
     println!("Nx = {:?}", n);

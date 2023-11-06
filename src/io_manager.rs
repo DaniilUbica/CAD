@@ -1,9 +1,6 @@
-use std::collections::vec_deque;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
-
-use mematrica::{CMatrix, Matrix};
 
 pub fn count_parts(file_name: &str) -> usize {
     let file = OpenOptions::new().read(true).open(format!("files/{}.cn", file_name)).expect("Can't open file");
