@@ -1,6 +1,15 @@
+use std::collections::vec_deque;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::io::{BufRead, BufReader};
+
+use mematrica::{CMatrix, Matrix};
+
+pub fn count_parts(file_name: &str) -> usize {
+    let file = OpenOptions::new().read(true).open(format!("files/{}.cn", file_name)).expect("Can't open file");
+    let lines_amount = BufReader::new(&file).lines().count();
+    lines_amount
+}
 
 pub fn save_rects(rects: &[(usize, usize)], e: &[usize], k: &[usize], file_name: &str) {
     let mut file = OpenOptions::new().write(true).create(true).open(format!("files/{}.cn", file_name)).expect("Can't open file");
@@ -21,6 +30,20 @@ pub fn save_loads(point: &[(i32, i32)], distributed: &[(i32, i32)], file_name: &
 
     for i in 0..distributed.len() {
         write!(file, "{} {}\n", distributed[i].0, distributed[i].1).unwrap();
+    }
+}
+
+pub fn save_results(deltas: Vec<f64>, forces: Vec<(f64, f64)>, file_name: &str) {
+    let mut file = OpenOptions::new().write(true).create(true).open(format!("files/{}.md", file_name)).expect("Can't open file");
+
+    for i in 0..deltas.len() {
+        write!(file, "{}\n", deltas[i]).unwrap();
+    }
+
+    write!(file, "*\n").unwrap();
+
+    for i in 0..forces.len() {
+        write!(file, "{} {}\n", forces[i].0, forces[i].1).unwrap();
     }
 }
 

@@ -6,7 +6,7 @@ use crate::contains_in_vec;
 pub const OUT_FILE_NAME: &str = "out.png";
 
 const OFFSET: u32 = 50;
-const POINT_RADIUS: u32 = 3;
+const POINT_RADIUS: u32 = 2;
 
 const RED: Rgb<u8> = Rgb([255, 0, 0]);
 const GREEN: Rgb<u8> = Rgb([0, 255, 0]);

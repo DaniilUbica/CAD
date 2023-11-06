@@ -1,4 +1,4 @@
-use mematrica::{CMatrix, CMatrixTrait};
+use mematrica::{CMatrix, CMatrixTrait, Matrix};
 
 use crate::vec_to_map;
 
@@ -63,36 +63,41 @@ pub fn build_movements_vector(amount: usize, rects: &[(usize, usize)], distribut
     vector
 }
 
-pub fn count_deltas(amount: usize, rects: &[(usize, usize)], e: &[usize], k: &[usize], distributed_loads: &[(i32, i32)], point_loads: &[(i32, i32)]) {
+pub fn count_deltas(amount: usize, reactions: &CMatrix<f64>, movements: &CMatrix<f64>) -> Option<Vec<f64>> {
     let n = amount + 1;
-    let mat = build_reactions_matrix(amount, rects, e, k);
-    let vec = build_movements_vector(amount, rects, distributed_loads, point_loads);
 
     let mut coefs = CMatrix::<f64>::zero(n, n);
     for i in 1..amount {
         for j in 1..amount {
-            coefs[(i, j)] = mat[(i, j)];
+            coefs[(i, j)] = reactions[(i, j)];
         }
     }
     
     coefs[(0, 0)] = 1.0;
     coefs[(amount, amount)] = 1.0;
 
-    println!("{:?}", coefs);
+
+    let mut v = vec![];
+    for i in 0..n {
+        v.push(movements[(i, 0)]);
+    }
+
+    println!("Deltas = {:?}", solve_system_equations(&coefs.get_elements(), &v));
+
+    solve_system_equations(&coefs.get_elements(), &v)
 }
 
-pub fn solve_system_equations(coefficients: &Vec<Vec<f64>>, constants: &Vec<f64>) -> Option<Vec<f64>> {
+fn solve_system_equations(coefficients: &Vec<Vec<f64>>, constants: &Vec<f64>) -> Option<Vec<f64>> {
     let n = coefficients.len();
     let m = coefficients[0].len();
 
     if n != m {
-        return None; // Система уравнений некорректна
+        return None;
     }
 
     let mut matrix = coefficients.clone();
     let mut vector = constants.clone();
 
-    // Прямой ход метода Гаусса
     for i in 0..n {
         let pivot = matrix[i][i];
 
@@ -109,7 +114,7 @@ pub fn solve_system_equations(coefficients: &Vec<Vec<f64>>, constants: &Vec<f64>
             }
 
             if !found {
-                return None; // Система уравнений некорректна
+                return None;
             }
         }
 
@@ -130,7 +135,6 @@ pub fn solve_system_equations(coefficients: &Vec<Vec<f64>>, constants: &Vec<f64>
         }
     }
 
-    // Обратный ход метода Жордана
     for i in (0..n).rev() {
         for j in (0..i).rev() {
             let factor = matrix[j][i];
@@ -144,4 +148,30 @@ pub fn solve_system_equations(coefficients: &Vec<Vec<f64>>, constants: &Vec<f64>
     }
 
     Some(vector)
+}
+
+fn nx(e: f64, a: f64, l: f64, diff: f64, q: f64, coeff: f64) -> f64 {
+    (e * a / l * diff) + (q * l / 20.0 * coeff)
+}
+
+pub fn count_forces(amount: usize, rects: &[(usize, usize)], e: &[usize], k: &[usize], reactions: &CMatrix<f64>, movements: &CMatrix<f64>, distributed_loads: &[(i32, i32)]) -> Vec<(f64, f64)> {
+
+    let deltas = count_deltas(amount, reactions, movements).unwrap();
+    let m_dist = vec_to_map(&distributed_loads[..]);
+
+    let mut diff = vec![];
+    diff.push(0.0);
+    for i in 1..amount+1 {
+        diff.push(deltas[i] - deltas[i - 1]);
+    }
+    diff.push(0.0);
+
+    let mut n = vec![];
+    for i in 0..amount {
+        let q1 = *m_dist.get(&((i + 1) as i32)).unwrap_or(&0) as f64;
+        n.push((nx(e[i] as f64, rects[i].0 as f64, rects[i].1 as f64, diff[i+1], q1 as f64, 1.0), nx(e[i] as f64, rects[i].0 as f64, rects[i].1 as f64, diff[i+1], q1 as f64, -1.0)));
+    }
+
+    println!("Nx = {:?}", n);
+    n
 }
