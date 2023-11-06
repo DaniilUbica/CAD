@@ -17,10 +17,10 @@ const WHITE: Rgb<u8> = Rgb([255, 255, 255]);
 pub fn draw_figure(rects: &[(usize, usize)], point_loads: &[(i32, i32)], distributed_loads: &[(i32, i32)]) -> (u32, u32) {
     let mut total_width = (OFFSET * 2) as usize;
     for i in rects {
-        total_width += i.0;
+        total_width += i.1;
     }
 
-    let height = rects.iter().max_by_key(|&(value, _)| value).unwrap().1 + OFFSET as usize;
+    let height = rects.iter().max_by_key(|&(value, _)| value).unwrap().0 + OFFSET as usize;
 
     let mut image_buffer: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_pixel(total_width as u32, height as u32, WHITE);
 
@@ -31,16 +31,16 @@ pub fn draw_figure(rects: &[(usize, usize)], point_loads: &[(i32, i32)], distrib
     for i in rects {
         let tmp = pos_x;
 
-        draw_rectangle_outline(&mut image_buffer, pos_x, (height - i.1) / 2, i.0, i.1, BLACK);
+        draw_rectangle_outline(&mut image_buffer, pos_x, (height - i.0) / 2, i.1, i.0, BLACK);
 
-        pos_x += i.0;
+        pos_x += i.1;
         rects_points.push((tmp, pos_x));
         rects_heights.push((height) / 2);
     }
 
     for i in 0..distributed_loads.len() {
-        let start_x = rects_points[distributed_loads[i].0 as usize - 1].0;
-        let end_x = rects_points[distributed_loads[i].0 as usize - 1].1;
+        let start_x = rects_points[distributed_loads[i].0 as usize - 1].1;
+        let end_x = rects_points[distributed_loads[i].0 as usize - 1].0;
         let h = rects_heights[distributed_loads[i].0 as usize - 1];
 
         if distributed_loads[i].1 > 0 {
@@ -55,20 +55,18 @@ pub fn draw_figure(rects: &[(usize, usize)], point_loads: &[(i32, i32)], distrib
         let x;
         let y = rects_heights[point_loads[i].0 as usize - 1];
         
-        if i == point_loads.len() - 1 && point_loads.len() > 1 {
-            x = rects_points[point_loads[i].0 as usize - 1].0;
-        }
-        else {
+        if i == point_loads.len() - 1 && point_loads.len() > 1 || i == 0 {
             x = rects_points[point_loads[i].0 as usize - 1].1;
         }
+        else {
+            x = rects_points[point_loads[i].0 as usize - 1].0;
+        }
 
-        if (!contains_in_vec(point_loads[i].0, distributed_loads)) {
-            if point_loads[i].1 > 0 {
-                draw_circle(&mut image_buffer, x as i32, y as i32, POINT_RADIUS as i32, RED);
-            }
-            else {
-                draw_circle(&mut image_buffer, x as i32, y as i32, POINT_RADIUS as i32, BLUE);
-            }
+        if point_loads[i].1 > 0 {
+            draw_circle(&mut image_buffer, x as i32, y as i32, POINT_RADIUS as i32, RED);
+        }
+        else {
+            draw_circle(&mut image_buffer, x as i32, y as i32, POINT_RADIUS as i32, BLUE);
         }
     }
 

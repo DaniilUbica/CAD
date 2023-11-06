@@ -66,6 +66,7 @@ dependencies = [
  "fltk",
  "image",
  "imageproc",
+ "mematrica",
  "rusttype",
 ]
 
@@ -359,6 +360,15 @@ checksum = "7574c1cf36da4798ab73da5b215bbf444f50718207754cb522201d78d1cd0ff2"
 dependencies = [
  "autocfg",
  "rawpointer",
+]
+
+[[package]]
+name = "mematrica"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2671ea3f30156d0921674e2a7729883b1bed95ed878d26d0d507575f7d6d5263"
+dependencies = [
+ "num",
 ]
 
 [[package]]

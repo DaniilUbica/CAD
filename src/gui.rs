@@ -7,7 +7,7 @@ use fltk::frame::Frame;
 use fltk::window::Window;
 use fltk::prelude::*;
 
-use crate::{parse_numbers, draw_figure, OUT_FILE_NAME, parse_loads, parse_single_numbers, save_rects, save_loads, read_rects, read_loads};
+use crate::{parse_numbers, draw_figure, OUT_FILE_NAME, parse_loads, parse_single_numbers, save_rects, save_loads, read_rects, read_loads, build_reactions_matrix, build_movements_vector, count_deltas};
 
 pub const WINDOW_WIDTH: i32 = 800;
 pub const WINDOW_HEIGHT: i32 = 600;
@@ -34,7 +34,7 @@ pub fn init_window(width: i32, height: i32, content: &dyn Fn()) -> window::Doubl
 
 pub fn init_input() {
     let points_amount = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 50, INPUT_WIDTH, INPUT_HEIGHT, "Количество частей: ");
-    let points = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 100, INPUT_WIDTH, INPUT_HEIGHT, "Размеры частей: ");
+    let points = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 100, INPUT_WIDTH, INPUT_HEIGHT, "Размеры частей(сначала A, потом L): ");
 
     let e = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 150, INPUT_WIDTH, INPUT_HEIGHT, "E: ");
     let k = input::Input::new(WINDOW_WIDTH / 2 - INPUT_WIDTH / 2, 200, INPUT_WIDTH, INPUT_HEIGHT, "k: ");
@@ -115,6 +115,11 @@ pub fn init_input() {
                     w = WINDOW_WIDTH;
                     h = WINDOW_HEIGHT
                 }
+
+                build_reactions_matrix(p as usize, &points_vec[..], &e_vec[..], &k_vec[..]);
+                build_movements_vector(p as usize, &points_vec[..], &dist_loads_vec[..], &point_loads_vec[..]);
+                count_deltas(p as usize, &points_vec[..], &e_vec[..], &k_vec[..], &dist_loads_vec[..], &point_loads_vec[..]);
+
                 let mut wnd = init_window(w, h, &init_frame);
                 wnd.show();
             }
@@ -137,6 +142,7 @@ pub fn init_input() {
                     w = WINDOW_WIDTH;
                     h = WINDOW_HEIGHT
                 }
+                build_movements_vector(2, &rects[..], &dist[..], &point[..]);
                 let mut wnd = init_window(w, h, &init_frame);
                 wnd.show();
 
